@@ -19,8 +19,7 @@ This project provides a comprehensive solution for handling communications using
 
 1. Clone the repository to your local machine.
 2. Open the project in Microsoft Visual Studio or your preferred development environment that supports Windows-specific development.
-3. Ensure the Boost library paths are correctly set up if the project requires it (not applicable to the provided code directly).
-4. Build the project to produce the executable.
+3. Build the project to produce the executable.
 
 ### Running the Application
 
