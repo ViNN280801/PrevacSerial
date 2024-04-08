@@ -4,13 +4,13 @@
 
 #include "PrevacMessageType.h"
 
-static void checkDataLen(uint8_t& dataLen)
+static void checkDataLen(uint16_t& dataLen)
 {
 	if (dataLen > kdefault_max_data_len)
 	{
 #ifdef LOG_ON
 		std::cout << "Warning: length of the data exceeds max value: " << dataLen
-			<< ". Data field will assign only " << kdefault_max_data_len + 1 << " bytes\n";
+			<< ". Data field will assign only " << kdefault_max_data_len << " bytes\n";
 #endif
 		dataLen = kdefault_max_data_len;
 	}
@@ -64,8 +64,6 @@ prevac_msg_t::prevac_msg_t(prevac_msg_t const& msg_)
 void prevac_msg_t::calculateCRC()
 {
 	// Using more bytes type for ensuring avoiding of overflow while summarizing all fields.
-	// 2^16 - 1 = 65535 bytes. Max bytes when summarizing = 7 * 256 = 1792 < 65535. 
-	// Where 7 - count of fields in message without header (and CRC appropriately).
 	uint16_t sum{};
 
 	sum += dataLen + deviceAddr + deviceGroup + logicGroup + driverAddr + functionCode;

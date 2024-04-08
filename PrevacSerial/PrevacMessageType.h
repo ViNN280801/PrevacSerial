@@ -3,13 +3,18 @@
 #include <string_view>
 
 /* All default values are in 3.1 section of the TM13/TM14 Thikness Motor user manual. */
-static constexpr uint8_t const kdefault_max_data_len{ 0xff }; ///< Maximum length of the data frame.
-static constexpr uint8_t const kdefault_header_value{ 0xaa }; ///< Default value for the header of the Prevac message.
-static constexpr uint8_t const kdefault_device_addr{ 0xc8 };  ///< Default value for the device address of the Prevac message.
-static constexpr uint8_t const kdefault_device_group{ 0x91 }; ///< Default value for the device group of the Prevac message.
-static constexpr uint8_t const kdefault_logic_group{ 0xc8 };  ///< Default value for the logic group of the Prevac message.
-static constexpr uint8_t const kdefault_driver_addr{ 0x01 };  ///< Default value for the driver address of the Prevac message.
-static constexpr uint8_t const kdefault_null_value{ 0x00 };   ///< Default null value.
+static constexpr uint16_t const kdefault_max_data_len{ 0x100 };	 ///< Maximum length of the data frame.
+static constexpr uint8_t const kdefault_header_value{ 0xaa };	///< Default value for the header of the Prevac message.
+static constexpr uint8_t const kdefault_device_addr{ 0xc8 };	///< Default value for the device address of the Prevac message.
+static constexpr uint8_t const kdefault_device_group{ 0x91 };	///< Default value for the device group of the Prevac message.
+static constexpr uint8_t const kdefault_logic_group{ 0xc8 };	///< Default value for the logic group of the Prevac message.
+static constexpr uint8_t const kdefault_driver_addr{ 0x01 };	///< Default value for the driver address of the Prevac message.
+
+/* Other default values. */
+static constexpr uint8_t const kdefault_null_value{ 0x00 };                       ///< Default null value.
+static constexpr uint8_t const kdefault_message_parts_count{ 0x09 };		      ///< Prevac message parts count including the data.
+static constexpr uint8_t const kdefault_message_parts_count_without_data{ 0x08 }; ///< Prevac message parts count excluding the data.
+static constexpr uint16_t const kdefault_max_prevac_msg_size{ 8 + 0x100 };        ///< Maximum size of the prevac message. 8 bytes for the message parts excluding data + 256 bytes for data. Even if data is null it still occupies 1 byte of the data in memory.
 
 /**
  * @struct prevac_msg_t
@@ -17,7 +22,7 @@ static constexpr uint8_t const kdefault_null_value{ 0x00 };   ///< Default null 
  */
 struct prevac_msg_t {
 	uint8_t header;					      ///< Protocol header, always 0xAA.
-	uint8_t dataLen;			          ///< Length of the data field.
+	uint16_t dataLen;			          ///< Length of the data field.
 	uint8_t deviceAddr;				      ///< Hardware device address. Default value is 0xC8.
 	uint8_t deviceGroup;			      ///< Type of the device. EBV Powers Supply (0x91), TM13/TM14(0xA1).
 	uint8_t logicGroup;				      ///< Group of devices in link layer. Default value is 0xC8.

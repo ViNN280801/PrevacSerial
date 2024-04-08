@@ -156,7 +156,7 @@ bool PrevacSerial::sendMessage(prevac_msg_t const& msg)
 
 bool PrevacSerial::receiveMessage(prevac_msg_t& msg)
 {
-	uint8_t buffer[kdefault_max_data_len];
+	uint8_t buffer[kdefault_max_prevac_msg_size];
 	DWORD bytesRead;
 
 	if (!readData(buffer, sizeof(buffer), bytesRead))
@@ -167,16 +167,20 @@ bool PrevacSerial::receiveMessage(prevac_msg_t& msg)
 		return false;
 	}
 
-	if (buffer[0] != kdefault_header_value || bytesRead != msg.dataLen)
+	// We can recieve max 263 bytes: where 8 from it all the parts of the message without data, and 255 bytes for the data.
+	if (bytesRead < 9) // 9 bytes is the min bytes to recieve (all 9 parts of the message, where data is null).
 	{
 #ifdef LOG_ON
-		std::cerr << "Error: Invalid header or insufficient bytes read\n";
+		std::cerr << "Error: Insufficient bytes read: " << bytesRead << " bytes\n";
 #endif
 		return false;
 	}
 
-	size_t expectedDataLen{ buffer[1] };
-	if (bytesRead != sizeof(prevac_msg_t) - kdefault_max_data_len + expectedDataLen)
+	msg.header = buffer[0];
+	msg.dataLen = buffer[1];
+
+	DWORD expectedSize{ static_cast<DWORD>(kdefault_message_parts_count_without_data) + static_cast<DWORD>(msg.dataLen)};
+	if (bytesRead != expectedSize)
 	{
 #ifdef LOG_ON
 		std::cerr << "Error: Bytes read doesn't match expected structure size\n";
@@ -184,10 +188,17 @@ bool PrevacSerial::receiveMessage(prevac_msg_t& msg)
 		return false;
 	}
 
+	if (buffer[0] != kdefault_header_value)
+	{
+#ifdef LOG_ON
+		std::cerr << "Error: Invalid header or insufficient bytes read\n";
+#endif
+		return false;
+	}
+
 	// Direct parsing assuming fixed-size leading fields and dynamic data field length.
 	size_t offset{};
 	size_t bufferSize{ sizeof(buffer) };
-
 	if (!safeCopyFromBuffer(msg.header, offset, buffer, bufferSize) ||
 		!safeCopyFromBuffer(msg.dataLen, offset, buffer, bufferSize) ||
 		!safeCopyFromBuffer(msg.deviceAddr, offset, buffer, bufferSize) ||

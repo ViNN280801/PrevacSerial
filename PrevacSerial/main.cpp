@@ -14,7 +14,7 @@ int main()
 
 		// Preparing message.
 		prevac_msg_t msg;
-		msg.setMessage("Hello, World!");
+		msg.setMessage("H3110, W0r1D!");
 		msg.print();
 
 		// Send the message.
