@@ -66,15 +66,6 @@ void PrevacSerial::setConnectionParameters(BYTE dataBits, BYTE parity, BYTE stop
 	m_dcbSerialParams.BaudRate = baudRate;       // 57600 baud rate.
 }
 
-void PrevacSerial::setConnectionTimeouts(DWORD readIntervalTimeout, DWORD readTotalTimeoutMultiplier, DWORD readTotalTimeoutConstant, DWORD writeTotalTimeoutMultiplier, DWORD writeTotalTimeoutConstant)
-{
-	m_timeouts.ReadIntervalTimeout = readIntervalTimeout;                 // Maximum time between read chars.
-	m_timeouts.ReadTotalTimeoutMultiplier = readTotalTimeoutMultiplier;   // Multiplier of characters.
-	m_timeouts.ReadTotalTimeoutConstant = readTotalTimeoutConstant;       // Constant in milliseconds.
-	m_timeouts.WriteTotalTimeoutMultiplier = writeTotalTimeoutMultiplier; // Multiplier of characters.
-	m_timeouts.WriteTotalTimeoutConstant = writeTotalTimeoutConstant;     // Constant in milliseconds.
-}
-
 bool PrevacSerial::establishConnection(char const* portName, DWORD baudRate)
 {
 	m_hSerial = CreateFileA(
@@ -109,18 +100,6 @@ bool PrevacSerial::establishConnection(char const* portName, DWORD baudRate)
 	{
 #ifdef LOG_ON
 		std::cerr << "Error: Can't set communication state. Maybe connection parameters are wrong. Error code: "
-			<< GetLastError() << '\n';
-#endif
-		CloseHandle(m_hSerial);
-		m_hSerial = INVALID_HANDLE_VALUE;
-		return false;
-	}
-
-	setConnectionTimeouts();
-	if (!SetCommTimeouts(m_hSerial, &m_timeouts))
-	{
-#ifdef LOG_ON
-		std::cerr << "Error: Can't set communication timeouts. Maybe connection timeouts are wrong. Error code: "
 			<< GetLastError() << '\n';
 #endif
 		CloseHandle(m_hSerial);

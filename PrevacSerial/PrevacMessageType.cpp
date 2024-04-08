@@ -1,6 +1,9 @@
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
+#include <sstream>
+#include <vector>
 
 #include "PrevacMessageType.h"
 
@@ -17,7 +20,7 @@ static void checkDataLen(uint16_t& dataLen)
 }
 
 prevac_msg_t::prevac_msg_t() : header(kdefault_header_value), dataLen(kdefault_null_value),
-deviceAddr(kdefault_driver_addr), deviceGroup(kdefault_device_group), logicGroup(kdefault_logic_group),
+deviceAddr(kdefault_device_addr), deviceGroup(kdefault_device_group), logicGroup(kdefault_logic_group),
 driverAddr(kdefault_driver_addr), functionCode(kdefault_null_value), crc(kdefault_null_value)
 {
 	// Initialize data with zeroes.
@@ -67,8 +70,9 @@ void prevac_msg_t::calculateCRC()
 	uint16_t sum{};
 
 	sum += dataLen + deviceAddr + deviceGroup + logicGroup + driverAddr + functionCode;
-	for (auto const& byte : data)
-		sum += byte;
+	for (uint8_t i{}; i < dataLen; ++i)
+		if (data[i] != 0x00)
+			sum += data[i];
 
 	// Calculating CRC as modulo 256 from sum.
 	crc = static_cast<uint8_t>(sum % 256);
@@ -76,25 +80,37 @@ void prevac_msg_t::calculateCRC()
 
 void prevac_msg_t::setMessage(std::string_view data_)
 {
-	if (kdefault_max_data_len < data_.length())
+	// Clearing buffer.
+	std::memset(data, 0x00, dataLen);
+
+	// Converting string data to hex bytes.
+	std::string hex_data(data_.begin(), data_.end());
+	std::istringstream hex_stream(hex_data);
+	std::vector<uint8_t> bytes;
+	std::string byte_string;
+
+	while (std::getline(hex_stream, byte_string, ' '))
+	{
+		if (!byte_string.empty())
+		{
+			unsigned int byte_value{};
+			std::stringstream ss;
+			ss << std::hex << byte_string;
+			if (!(ss >> byte_value))
+				throw std::runtime_error("Invalid hex byte: " + byte_string);
+			bytes.emplace_back(static_cast<uint8_t>(byte_value));
+		}
+	}
+
+	if (bytes.size() > dataLen)
 	{
 #ifdef LOG_ON
-		std::cout << "Warning: Specified data length is " << static_cast<int>(dataLen)
-			<< ", passed string has length: " << data_.length()
-			<< ". Assigning only " << static_cast<int>(kdefault_max_data_len) << " bytes\n";
+		std::cout << "Warning: Specified data length is larger than allowed by dataLen. Truncating to "
+			<< static_cast<int>(dataLen) << " bytes\n";
 #endif
-		dataLen = kdefault_max_data_len; // Adjust dataLen to maximum allowed to prevent overflow.
+		bytes.resize(dataLen);
 	}
-	else
-		dataLen = static_cast<uint8_t>(data_.length());
-
-	// Copy data from string_view to the data array
-	for (uint8_t i{}; i < dataLen; ++i)
-		data[i] = static_cast<uint8_t>(data_[i]);
-
-	// Zero out the rest of the data if the provided data is shorter than `kdefault_max_data_len`.
-	if (dataLen < kdefault_max_data_len)
-		std::memset(data + dataLen, 0, kdefault_max_data_len - dataLen);
+	std::copy(bytes.begin(), bytes.end(), data);
 
 	// Recalculate CRC code because data is set up.
 	calculateCRC();

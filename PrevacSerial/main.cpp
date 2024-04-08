@@ -14,8 +14,11 @@ int main()
 
 		// Preparing message.
 		prevac_msg_t msg;
-		msg.setMessage("H3110, W0r1D!");
+		msg.functionCode = 0x53;
+		msg.dataLen = 4;
+		msg.setMessage("0x01");
 		msg.print();
+		msg.printDetailed();
 
 		// Send the message.
 		if (serial.sendMessage(msg))
