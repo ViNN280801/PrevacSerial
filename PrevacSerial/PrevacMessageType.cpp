@@ -76,7 +76,7 @@ void prevac_msg_t::calculateCRC()
 	crc = static_cast<uint8_t>(sum % 256);
 }
 
-void prevac_msg_t::setData(std::string_view data_)
+void prevac_msg_t::setMessage(std::string_view data_)
 {
 	if (kdefault_max_data_len < data_.length())
 	{

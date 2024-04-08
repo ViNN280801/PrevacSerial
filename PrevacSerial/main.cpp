@@ -3,16 +3,10 @@
 #include "PrevacSerial.h"
 #include "Utilities.h"
 
-#define COM_PORT "COM4"
+#define COM_PORT "COM3"
 
-int main() {
-	prevac_msg_t msg;
-	msg.setData("Helloabrkjlnrejvrgr;toglrjkas;efjkrelghrgehfg34hifug4o5pj4rnjgvelsfkal;ewfhregj;fjkerjfksrjlfk;awfnkrejlgnksandfkjndsljfndljfnlfl;ksnfkjanfljkajglkdnsakgjslkfjmdsnkfkssafljsghiw4oh4iugopiaqojfoi34jgjr4ouhgtjgpoeks;fglajwefiJAOUIJEDIOPW#$pfjoifgoi4jgpjepij");
-
-	msg.print();
-	msg.printDetailed();
-	msg.printDataAsString();
-
+int main()
+{
 	PrevacSerial serial;
 	if (serial.establishConnection(COM_PORT))
 	{
@@ -20,8 +14,8 @@ int main() {
 
 		// Preparing message.
 		prevac_msg_t msg;
+		msg.setMessage("Hello, World!");
 		msg.print();
-		msg.printDetailed();
 
 		// Send the message.
 		if (serial.sendMessage(msg))

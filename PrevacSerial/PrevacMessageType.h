@@ -47,7 +47,7 @@ struct prevac_msg_t {
 	 * @brief Fills the data with specified string.
 	 * @param data_ String to assign the data field. Accepts types: char, string, const char[], etc.
 	 */
-	void setData(std::string_view data_);
+	void setMessage(std::string_view data_);
 
 	/**
 	 * @brief Calculates the total size of the message, combining fixed and variable parts.

@@ -136,7 +136,7 @@ public:
 	 * @param baudRate Baud rate for the connection.
 	 * @return True if connection was successfully established, False otherwise.
 	 */
-	bool establishConnection(const char* portName, DWORD baudRate = CBR_57600);
+	bool establishConnection(char const* portName, DWORD baudRate = CBR_57600);
 
 	/**
 	 * @brief Writes data to the serial port.

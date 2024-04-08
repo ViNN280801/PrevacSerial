@@ -75,7 +75,7 @@ void PrevacSerial::setConnectionTimeouts(DWORD readIntervalTimeout, DWORD readTo
 	m_timeouts.WriteTotalTimeoutConstant = writeTotalTimeoutConstant;     // Constant in milliseconds.
 }
 
-bool PrevacSerial::establishConnection(const char* portName, DWORD baudRate)
+bool PrevacSerial::establishConnection(char const* portName, DWORD baudRate)
 {
 	m_hSerial = CreateFileA(portName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 	if (m_hSerial == INVALID_HANDLE_VALUE)
@@ -90,7 +90,7 @@ bool PrevacSerial::establishConnection(const char* portName, DWORD baudRate)
 	if (!GetCommState(m_hSerial, &m_dcbSerialParams))
 	{
 #ifdef LOG_ON
-		std::cerr << "Error: Can't get comm state. Error code: " << GetLastError() << '\n';
+		std::cerr << "Error: Can't get communication state. Error code: " << GetLastError() << '\n';
 #endif
 		CloseHandle(m_hSerial);
 		m_hSerial = INVALID_HANDLE_VALUE;
@@ -101,7 +101,8 @@ bool PrevacSerial::establishConnection(const char* portName, DWORD baudRate)
 	if (!SetCommState(m_hSerial, &m_dcbSerialParams))
 	{
 #ifdef LOG_ON
-		std::cerr << "Error: Can't set comm state. Error code: " << GetLastError() << '\n';
+		std::cerr << "Error: Can't set communication state. Maybe connection parameters are wrong. Error code: "
+			<< GetLastError() << '\n';
 #endif
 		CloseHandle(m_hSerial);
 		m_hSerial = INVALID_HANDLE_VALUE;
@@ -112,7 +113,8 @@ bool PrevacSerial::establishConnection(const char* portName, DWORD baudRate)
 	if (!SetCommTimeouts(m_hSerial, &m_timeouts))
 	{
 #ifdef LOG_ON
-		std::cerr << "Error: Can't set communication timeouts. Error code: " << GetLastError() << '\n';
+		std::cerr << "Error: Can't set communication timeouts. Maybe connection timeouts are wrong. Error code: "
+			<< GetLastError() << '\n';
 #endif
 		CloseHandle(m_hSerial);
 		m_hSerial = INVALID_HANDLE_VALUE;
@@ -165,7 +167,7 @@ bool PrevacSerial::receiveMessage(prevac_msg_t& msg)
 		return false;
 	}
 
-	if (bytesRead < sizeof(prevac_msg_t) - kdefault_max_data_len + 1 || buffer[0] != kdefault_header_value)
+	if (buffer[0] != kdefault_header_value || bytesRead != msg.dataLen)
 	{
 #ifdef LOG_ON
 		std::cerr << "Error: Invalid header or insufficient bytes read\n";
