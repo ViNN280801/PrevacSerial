@@ -14,8 +14,9 @@ static void checkDataLen(uint8_t& dataLen)
 	}
 }
 
-prevac_msg_t::prevac_msg_t() : header(0xAA), dataLen(0x00), deviceAddr(0xC8), deviceGroup(0xA1),
-logicGroup(0xC8), driverAddr(0x01), functionCode(0x00), crc(0x00)
+prevac_msg_t::prevac_msg_t() : header(kdefault_header_value), dataLen(0x00), deviceAddr(kdefault_driver_addr),
+deviceGroup(kdefault_device_group), logicGroup(kdefault_logic_group),
+driverAddr(kdefault_driver_addr), functionCode(0x00), crc(0x00)
 {
 	// Initialize data with zeroes.
 	std::fill(std::begin(data), std::end(data), 0x00);
