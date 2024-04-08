@@ -80,8 +80,8 @@ void prevac_msg_t::setMessage(std::string_view data_)
 	{
 #ifdef LOG_ON
 		std::cout << "Warning: Specified data length is " << static_cast<int>(dataLen)
-			<< ", passed string has length: " << data_.length() + 1 // +1 because any string has null terminator \0.
-			<< ". Assigning only " << static_cast<int>(kdefault_max_data_len) + 1 << " bytes\n";
+			<< ", passed string has length: " << data_.length()
+			<< ". Assigning only " << static_cast<int>(kdefault_max_data_len) << " bytes\n";
 #endif
 		dataLen = kdefault_max_data_len; // Adjust dataLen to maximum allowed to prevent overflow.
 	}
@@ -118,7 +118,7 @@ void prevac_msg_t::print() const
 void prevac_msg_t::printDetailed() const
 {
 	std::cout << "Header: " << std::hex << std::uppercase << std::setfill('0') << std::setw(2) << static_cast<int>(header) << std::endl
-		<< "Data Length: " << std::dec << static_cast<int>(dataLen) + 1 << std::endl
+		<< "Data Length: " << std::dec << static_cast<int>(dataLen) << std::endl
 		<< "Device Address: " << std::hex << std::setw(2) << static_cast<int>(deviceAddr) << std::endl
 		<< "Device Group: " << std::setw(2) << static_cast<int>(deviceGroup) << std::endl
 		<< "Logic Group: " << std::setw(2) << static_cast<int>(logicGroup) << std::endl

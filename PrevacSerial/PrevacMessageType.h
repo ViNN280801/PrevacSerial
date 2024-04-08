@@ -6,7 +6,7 @@
 static constexpr uint16_t const kdefault_max_data_len{ 0x100 };	 ///< Maximum length of the data frame.
 static constexpr uint8_t const kdefault_header_value{ 0xaa };	///< Default value for the header of the Prevac message.
 static constexpr uint8_t const kdefault_device_addr{ 0xc8 };	///< Default value for the device address of the Prevac message.
-static constexpr uint8_t const kdefault_device_group{ 0x91 };	///< Default value for the device group of the Prevac message.
+static constexpr uint8_t const kdefault_device_group{ 0xa1 };	///< Default value for the device group of the Prevac message.
 static constexpr uint8_t const kdefault_logic_group{ 0xc8 };	///< Default value for the logic group of the Prevac message.
 static constexpr uint8_t const kdefault_driver_addr{ 0x01 };	///< Default value for the driver address of the Prevac message.
 
