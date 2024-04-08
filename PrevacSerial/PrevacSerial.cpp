@@ -77,7 +77,14 @@ void PrevacSerial::setConnectionTimeouts(DWORD readIntervalTimeout, DWORD readTo
 
 bool PrevacSerial::establishConnection(char const* portName, DWORD baudRate)
 {
-	m_hSerial = CreateFileA(portName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+	m_hSerial = CreateFileA(
+		portName,                           // COM-port name.
+		GENERIC_READ | GENERIC_WRITE,   // R/W access.
+		0,                                 // Sharing mode (0 for serial ports).
+		NULL,                       // Default security protection.
+		OPEN_EXISTING,             // Open an existing device.
+		FILE_FLAG_OVERLAPPED,       // Async I/O.
+		NULL);                           // No template for the file.
 	if (m_hSerial == INVALID_HANDLE_VALUE)
 	{
 #ifdef LOG_ON
@@ -179,7 +186,7 @@ bool PrevacSerial::receiveMessage(prevac_msg_t& msg)
 	msg.header = buffer[0];
 	msg.dataLen = buffer[1];
 
-	DWORD expectedSize{ static_cast<DWORD>(kdefault_message_parts_count_without_data) + static_cast<DWORD>(msg.dataLen)};
+	DWORD expectedSize{ static_cast<DWORD>(kdefault_message_parts_count_without_data) + static_cast<DWORD>(msg.dataLen) };
 	if (bytesRead != expectedSize)
 	{
 #ifdef LOG_ON
