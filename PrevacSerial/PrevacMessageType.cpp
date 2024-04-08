@@ -59,7 +59,9 @@ prevac_msg_t::prevac_msg_t(prevac_msg_t const& msg_)
 void prevac_msg_t::calculateCRC()
 {
 	// Using more bytes type for ensuring avoiding of overflow while summarizing all fields.
-	uint64_t sum{};
+	// 2^16 - 1 = 65535 bytes. Max bytes when summarizing = 7 * 256 = 1792 < 65535. 
+	// Where 7 - count of fields in message without header (and CRC appropriately).
+	uint16_t sum{};
 
 	sum += dataLen + deviceAddr + deviceGroup + logicGroup + driverAddr + functionCode;
 	for (auto const& byte : data)
