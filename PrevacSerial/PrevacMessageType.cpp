@@ -8,18 +8,20 @@ static void checkDataLen(uint8_t& dataLen)
 {
 	if (dataLen > kdefault_max_data_len)
 	{
+#ifdef LOG_ON
 		std::cout << "Warning: length of the data exceeds max value: " << dataLen
 			<< ". Data field will assign only " << kdefault_max_data_len + 1 << " bytes\n";
+#endif
 		dataLen = kdefault_max_data_len;
 	}
 }
 
-prevac_msg_t::prevac_msg_t() : header(kdefault_header_value), dataLen(0x00), deviceAddr(kdefault_driver_addr),
-deviceGroup(kdefault_device_group), logicGroup(kdefault_logic_group),
-driverAddr(kdefault_driver_addr), functionCode(0x00), crc(0x00)
+prevac_msg_t::prevac_msg_t() : header(kdefault_header_value), dataLen(kdefault_null_value),
+deviceAddr(kdefault_driver_addr), deviceGroup(kdefault_device_group), logicGroup(kdefault_logic_group),
+driverAddr(kdefault_driver_addr), functionCode(kdefault_null_value), crc(kdefault_null_value)
 {
 	// Initialize data with zeroes.
-	std::fill(std::begin(data), std::end(data), 0x00);
+	std::fill(std::begin(data), std::end(data), kdefault_null_value);
 	calculateCRC();
 }
 
@@ -51,7 +53,9 @@ prevac_msg_t::prevac_msg_t(prevac_msg_t const& msg_)
 	errno_t err{ memcpy_s(data, sizeof(data), msg_.data, dataLen) };
 	if (err != 0)
 	{
+#ifdef LOG_ON
 		std::cerr << "memcpy_s failed in ctor prevac_msg_t::prevac_msg_t(prevac_msg_t const&). Data field will set to 0\n";
+#endif
 		std::fill(std::begin(data), std::end(data), 0);
 	}
 	calculateCRC();
@@ -76,9 +80,11 @@ void prevac_msg_t::setData(std::string_view data_)
 {
 	if (kdefault_max_data_len < data_.length())
 	{
+#ifdef LOG_ON
 		std::cout << "Warning: Specified data length is " << static_cast<int>(dataLen)
 			<< ", passed string has length: " << data_.length() + 1 // +1 because any string has null terminator \0.
 			<< ". Assigning only " << static_cast<int>(kdefault_max_data_len) + 1 << " bytes\n";
+#endif
 		dataLen = kdefault_max_data_len; // Adjust dataLen to maximum allowed to prevent overflow.
 	}
 	else

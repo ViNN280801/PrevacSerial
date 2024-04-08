@@ -15,11 +15,21 @@ void PrevacSerial::clearBuffer_(uint8_t* buffer)
 void PrevacSerial::copyToBuffer_(uint8_t* buffer, size_t buffer_size, size_t& offset, const void* source, size_t size)
 {
 	if (offset + size > buffer_size)
-		throw std::runtime_error("Buffer overflow prevented in copyToBuffer_");
+	{
+#ifdef LOG_ON
+		std::cerr << "Buffer overflow prevented in " << __FUNCSIG__ << '\n';
+#endif
+		return;
+	}
 
 	errno_t err{ memcpy_s(buffer + offset, buffer_size - offset, source, size) };
 	if (err != 0)
-		throw std::runtime_error("memcpy_s failed in copyToBuffer_");
+	{
+#ifdef LOG_ON
+		std::cerr << "memcpy_s failed in " << __FUNCSIG__ << '\n';
+#endif
+		return;
+	}
 
 	offset += size;
 }
@@ -49,11 +59,20 @@ PrevacSerial::~PrevacSerial()
 
 void PrevacSerial::setConnectionParameters(BYTE dataBits, BYTE parity, BYTE stopBits, DWORD flowControl, DWORD baudRate)
 {
-	m_dcbSerialParams.ByteSize = 8;                      // Data bits.
-	m_dcbSerialParams.Parity = NOPARITY;                 // None parity.
-	m_dcbSerialParams.StopBits = ONE5STOPBITS;           // Stop bits.
-	m_dcbSerialParams.fDtrControl = DTR_CONTROL_DISABLE; // None flow control.
-	m_dcbSerialParams.BaudRate = baudRate;               // 57600 baud rate.
+	m_dcbSerialParams.ByteSize = dataBits;       // Data bits.
+	m_dcbSerialParams.Parity = parity;           // None parity.
+	m_dcbSerialParams.StopBits = stopBits;       // Stop bits.
+	m_dcbSerialParams.fDtrControl = flowControl; // None flow control.
+	m_dcbSerialParams.BaudRate = baudRate;       // 57600 baud rate.
+}
+
+void PrevacSerial::setConnectionTimeouts(DWORD readIntervalTimeout, DWORD readTotalTimeoutMultiplier, DWORD readTotalTimeoutConstant, DWORD writeTotalTimeoutMultiplier, DWORD writeTotalTimeoutConstant)
+{
+	m_timeouts.ReadIntervalTimeout = readIntervalTimeout;                 // Maximum time between read chars.
+	m_timeouts.ReadTotalTimeoutMultiplier = readTotalTimeoutMultiplier;   // Multiplier of characters.
+	m_timeouts.ReadTotalTimeoutConstant = readTotalTimeoutConstant;       // Constant in milliseconds.
+	m_timeouts.WriteTotalTimeoutMultiplier = writeTotalTimeoutMultiplier; // Multiplier of characters.
+	m_timeouts.WriteTotalTimeoutConstant = writeTotalTimeoutConstant;     // Constant in milliseconds.
 }
 
 bool PrevacSerial::establishConnection(const char* portName, DWORD baudRate)
@@ -61,39 +80,40 @@ bool PrevacSerial::establishConnection(const char* portName, DWORD baudRate)
 	m_hSerial = CreateFileA(portName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 	if (m_hSerial == INVALID_HANDLE_VALUE)
 	{
+#ifdef LOG_ON
 		std::cerr << "Error: Can't open serial port. Error code: " << GetLastError() << '\n';
+#endif
 		return false;
 	}
 
 	m_dcbSerialParams.DCBlength = sizeof(m_dcbSerialParams);
 	if (!GetCommState(m_hSerial, &m_dcbSerialParams))
 	{
+#ifdef LOG_ON
 		std::cerr << "Error: Can't get comm state. Error code: " << GetLastError() << '\n';
+#endif
 		CloseHandle(m_hSerial);
 		m_hSerial = INVALID_HANDLE_VALUE;
 		return false;
 	}
 
-	// Setting connection params.
-	setConnectionParameters(8, NOPARITY, ONE5STOPBITS, DTR_CONTROL_DISABLE, baudRate);
-
+	setConnectionParameters();
 	if (!SetCommState(m_hSerial, &m_dcbSerialParams))
 	{
+#ifdef LOG_ON
 		std::cerr << "Error: Can't set comm state. Error code: " << GetLastError() << '\n';
+#endif
 		CloseHandle(m_hSerial);
 		m_hSerial = INVALID_HANDLE_VALUE;
 		return false;
 	}
 
-	// Setting communication timeouts.
-	m_timeouts.ReadIntervalTimeout = 50;
-	m_timeouts.ReadTotalTimeoutConstant = 50;
-	m_timeouts.ReadTotalTimeoutMultiplier = 10;
-	m_timeouts.WriteTotalTimeoutConstant = 50;
-	m_timeouts.WriteTotalTimeoutMultiplier = 10;
+	setConnectionTimeouts();
 	if (!SetCommTimeouts(m_hSerial, &m_timeouts))
 	{
+#ifdef LOG_ON
 		std::cerr << "Error: Can't set communication timeouts. Error code: " << GetLastError() << '\n';
+#endif
 		CloseHandle(m_hSerial);
 		m_hSerial = INVALID_HANDLE_VALUE;
 		return false;
@@ -124,7 +144,9 @@ bool PrevacSerial::sendMessage(prevac_msg_t const& msg)
 	}
 	catch (const std::exception& e)
 	{
+#ifdef LOG_ON
 		std::cerr << "Error: Can't send message " << e.what() << '\n';
+#endif
 		clearBuffer_(buffer);
 		return false;
 	}
@@ -137,20 +159,26 @@ bool PrevacSerial::receiveMessage(prevac_msg_t& msg)
 
 	if (!readData(buffer, sizeof(buffer), bytesRead))
 	{
+#ifdef LOG_ON
 		std::cerr << "Error: Can't read data. Error code: " << GetLastError() << '\n';
+#endif
 		return false;
 	}
 
-	if (bytesRead < sizeof(prevac_msg_t) - kdefault_max_data_len + 1 || buffer[0] != 0xAA)
+	if (bytesRead < sizeof(prevac_msg_t) - kdefault_max_data_len + 1 || buffer[0] != kdefault_header_value)
 	{
+#ifdef LOG_ON
 		std::cerr << "Error: Invalid header or insufficient bytes read\n";
+#endif
 		return false;
 	}
 
 	size_t expectedDataLen{ buffer[1] };
 	if (bytesRead != sizeof(prevac_msg_t) - kdefault_max_data_len + expectedDataLen)
 	{
+#ifdef LOG_ON
 		std::cerr << "Error: Bytes read doesn't match expected structure size\n";
+#endif
 		return false;
 	}
 
@@ -166,7 +194,9 @@ bool PrevacSerial::receiveMessage(prevac_msg_t& msg)
 		!safeCopyFromBuffer(msg.driverAddr, offset, buffer, bufferSize) ||
 		!safeCopyFromBuffer(msg.functionCode, offset, buffer, bufferSize))
 	{
+#ifdef LOG_ON
 		std::cerr << "Error: Failed to safely copy message fields\n";
+#endif
 		return false;
 	}
 

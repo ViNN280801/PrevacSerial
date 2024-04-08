@@ -9,6 +9,7 @@ static constexpr uint8_t const kdefault_device_addr{ 0xc8 };  ///< Default value
 static constexpr uint8_t const kdefault_device_group{ 0x91 }; ///< Default value for the device group of the Prevac message.
 static constexpr uint8_t const kdefault_logic_group{ 0xc8 };  ///< Default value for the logic group of the Prevac message.
 static constexpr uint8_t const kdefault_driver_addr{ 0x01 };  ///< Default value for the driver address of the Prevac message.
+static constexpr uint8_t const kdefault_null_value{ 0x00 };   ///< Default null value.
 
 /**
  * @struct prevac_msg_t

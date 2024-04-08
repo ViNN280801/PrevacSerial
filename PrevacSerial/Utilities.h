@@ -22,14 +22,18 @@ bool safeCopyFromBuffer(T& dest, size_t& offset, uint8_t const* source, size_t s
 	// Ensure the variable does not exceed the remaining buffer size.
 	if (sizeof(T) > remainingBufferSize)
 	{
+#ifdef LOG_ON
 		std::cerr << __FUNCSIG__ << ": Copy exceeds buffer bounds\n";
+#endif
 		return false;
 	}
 
 	errno_t err{ memcpy_s(&dest, sizeof(T), source + offset, sizeof(T)) };
 	if (err != 0)
 	{
+#ifdef LOG_ON
 		std::cerr << __FUNCSIG__ << ": memcpy_s failed\n";
+#endif
 		return false;
 	}
 
