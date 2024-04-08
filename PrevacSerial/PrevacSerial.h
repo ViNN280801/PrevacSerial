@@ -82,6 +82,46 @@ public:
 		DWORD flowControl = DTR_CONTROL_DISABLE, DWORD baudRate = CBR_57600);
 
 	/**
+	 * @brief Sets the communication timeouts for the serial port.
+	 *
+	 * This method configures the timeout parameters for reading from and writing to the serial port,
+	 * using the _COMMTIMEOUTS structure parameters. These parameters control the behavior of read and write
+	 * operations on the serial port, specifically how the system times out read or write operations.
+	 *
+	 * @param readIntervalTimeout Maximum time, in milliseconds, allowed to elapse between the arrival
+	 *                            of two consecutive characters on the communications line. Setting to MAXDWORD
+	 *                            will disable interval timeouts if both ReadTotalTimeoutMultiplier and
+	 *                            ReadTotalTimeoutConstant are also set to MAXDWORD. A value of 0 indicates
+	 *                            that interval timeouts are not used.
+	 *
+	 * @param readTotalTimeoutMultiplier Multiplier, in milliseconds, used to calculate the total time-out
+	 *                                   period for read operations. For each read operation, this value is
+	 *                                   multiplied by the requested number of bytes to be read.
+	 *
+	 * @param readTotalTimeoutConstant A constant, in milliseconds, used to calculate the total time-out
+	 *                                 period for read operations. This value is added to the product of the
+	 *                                 ReadTotalTimeoutMultiplier member and the requested number of bytes.
+	 *
+	 * @param writeTotalTimeoutMultiplier Multiplier, in milliseconds, used to calculate the total time-out
+	 *                                    period for write operations. For each write operation, this value
+	 *                                    is multiplied by the number of bytes to be written.
+	 *
+	 * @param writeTotalTimeoutConstant A constant, in milliseconds, used to calculate the total time-out
+	 *                                  period for write operations. This value is added to the product of
+	 *                                  the WriteTotalTimeoutMultiplier member and the number of bytes to be
+	 *                                  written.
+	 *
+	 * @note A time-out occurs when a read operation does not receive the expected number of bytes within
+	 *       the time-out period calculated using the multiplier and constant values. Similarly, a time-out
+	 *       occurs when a write operation cannot transmit the specified number of bytes within the calculated
+	 *       time-out period. Adjusting these parameters can help manage the flow of data over the serial port,
+	 *       especially in applications that require precise timing control.
+	 */
+	void setConnectionTimeouts(DWORD readIntervalTimeout = 50, DWORD readTotalTimeoutMultiplier = 10,
+		DWORD readTotalTimeoutConstant = 50, DWORD writeTotalTimeoutMultiplier = 10,
+		DWORD writeTotalTimeoutConstant = 50);
+
+	/**
 	 * @brief Establishes a serial connection to a specified port with a given baud rate.
 	 *
 	 * Default connection parameters from the user manual (TM13/TM14 Thickness Monitor).
